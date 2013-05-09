@@ -1,2 +1,35 @@
-hi, there. oo.
+<!DOCTYPE html>
+<html lang="en" ng-app>
+<head>
+  <meta charset="UTF-8" />
+  <title></title>
+  <link href="css/bootstrap.css" rel="stylesheet">
+  <link href="css/flat-ui.css" rel="stylesheet">
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
+  <style type="text/css">
+  li {list-style-type:square}
+  .todo-search {background: #fff url("../images/todo/search.png") 92% center no-repeat}
+  </style>
+</head>
+<body ng-controller="initLoad">
+<div class="todo-search">
+  <input type="search" class="todo-search-field" placeholder="Search" />
+</div>
+<ul class="contents">
+  <li ng-repeat="d in data"><a href="{{d.html_url}}" target="_blank">{{d.full_name}}</a> :: {{d.description}}</li>
+</ul>
+<script type="text/javascript">
+function initLoad($scope, $http) {
+  $http({
+    method: 'GET',
+    url: 'https://api.github.com/users/Ephemera/starred'
+  }).success(function(data, status, headers, config) {
+    $scope.data = data;
+    console.log(headers('Link'));
+  }).error(function(data, status, headers, config) {
+  });
+};
+</script>
+</body>
+</html>
 

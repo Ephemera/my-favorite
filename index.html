@@ -5,29 +5,75 @@
   <title></title>
   <link href="css/bootstrap.css" rel="stylesheet">
   <link href="css/flat-ui.css" rel="stylesheet">
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
+  <script src="js/angular.js"></script>
   <style type="text/css">
   li {list-style-type:square}
-  .todo-search {background: #fff url("../images/todo/search.png") 92% center no-repeat}
+  .todo-search {background: #fff url("../images/todo/search.png") 92% center no-repeat; width:240px;}
+  .loading {margin-left:25px}
+  .hide {display:none}
   </style>
 </head>
-<body ng-controller="initLoad">
-<div class="todo-search">
-  <input type="search" class="todo-search-field" placeholder="Search" />
+<body>
+<div class="wrapper" ng-controller="initLoad">
+  <div class="todo-search">
+    <input type="search" class="todo-search-field" placeholder="Search" ng-model="keyword" ng-model-onblur ng-change="change()" />
+  </div>
+  <span class="loading">loading...</span>
+  <ul class="contents" ng-init="getData()">
+    <li ng-repeat="d in data"><a href="{{d.html_url}}" target="_blank">{{d.full_name}}</a> :: {{d.language}} :: {{d.description}}</li>
+  </ul>
 </div>
-<ul class="contents">
-  <li ng-repeat="d in data"><a href="{{d.html_url}}" target="_blank">{{d.full_name}}</a> :: {{d.description}}</li>
-</ul>
 <script type="text/javascript">
 function initLoad($scope, $http) {
-  $http({
-    method: 'GET',
-    url: 'https://api.github.com/users/Ephemera/starred'
-  }).success(function(data, status, headers, config) {
-    $scope.data = data;
-    console.log(headers('Link'));
-  }).error(function(data, status, headers, config) {
-  });
+  var _data = [];
+  $scope.data = [];
+
+  $scope.change = function() {
+    Array.prototype.slice.call(document.getElementsByTagName('li')).filter(function(el) {
+      el.className = 'hide';
+      return new RegExp($scope.keyword, 'i').test(el.innerText);
+    }).forEach(function(el) {
+      el.className = '';
+    });
+  };
+
+  $scope.getData = function(url) {
+    $http({
+      method: 'GET',
+      url: url || 'https://api.github.com/users/Ephemera/starred'
+    }).success(function(data, status, headers, config) {
+      $scope.data = $scope.data.concat(data);
+
+      var next = linkParser(headers('Link'))['next'];
+      if (next) {
+        $scope.getData(next['link']);
+      } else {
+        //_data = $scope.data;
+        document.getElementsByClassName('loading')[0].className += ' hide';
+      }
+    }).error(function(data, status, headers, config) {
+      console.error(status, config);
+    });
+  }
+
+  function linkParser(linkStr) {
+    var result = {};
+
+    linkStr.split(',').forEach(function(data) {
+      var each_result = {} 
+        , link_val = data.trim().split(';')
+        , link = link_val.shift().match(/<(.*?)>/)[1];
+
+      each_result['link'] = link;
+      link_val.forEach(function(param) {
+        var param_val = param.split('=');
+        each_result[param_val[0].trim()] = param_val[1].match(/\"(.*?)\"/)[1];
+      });
+      result[each_result['rel']] = each_result;
+    });
+    return result;
+  }
+
 };
 </script>
 </body>

@@ -44,9 +44,12 @@ function initLoad($scope, $http) {
     }).success(function(data, status, headers, config) {
       $scope.data = $scope.data.concat(data);
 
-      var next = linkParser(headers('Link'))['next'];
+      var linkData = linkParser(headers('Link'));
+      var next = linkData['next'];
+      var last = linkData['last'];
       if (next) {
         $scope.getData(next['link']);
+        document.getElementsByClassName('loading')[0].innerHTML = 'loading... ' + (((next['link'].match(/page=(\d+)/)[1])/(last['link'].match(/page=(\d+)/)[1]))*100|0) + '%';
       } else {
         //_data = $scope.data;
         document.getElementsByClassName('loading')[0].className += ' hide';

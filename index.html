@@ -31,7 +31,7 @@ function initLoad($scope, $http) {
   $scope.change = function() {
     Array.prototype.slice.call(document.getElementsByTagName('li')).filter(function(el) {
       el.className = 'hide';
-      return new RegExp($scope.keyword, 'i').test(el.innerText);
+      return new RegExp($scope.keyword, 'i').test(el.textContent);
     }).forEach(function(el) {
       el.className = '';
     });
